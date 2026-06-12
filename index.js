@@ -49,7 +49,7 @@ app.command("/vector-hello", async ({ack, respond}) => {
   await ack();
 
   await respond({
-     text: "Hello! I'm Vector, a slack bot still under development."
+     text: "Hello! I'm Vector, a Slack bot still under development."
      });
 });
 
@@ -67,6 +67,9 @@ app.command("/vector-help", async ({ ack, respond }) => {
   });
 });
 
+app.error((error) => {
+  console.error(error);
+});
 
 (async () => {
   await app.start();
