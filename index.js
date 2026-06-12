@@ -10,7 +10,7 @@ const app = new App({
 });
 
 
-app.command("/vector-ping", async ({ command, ack, respond }) => {
+app.command("/vector-ping", async ({ack, respond }) => {
   const start = Date.now();
   await ack();
   const latency = Date.now() - start;
@@ -62,6 +62,7 @@ app.command("/vector-help", async ({ ack, respond }) => {
 /vector-ping - Check bot latency
 /vector-catfact - Get a cat fact
 /vector-joke - Get a random joke
+/vector-hello - Says hello!
 /vector-help - Show this help message`
   });
 });
