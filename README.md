@@ -1,1 +1,1 @@
-# Orbit-slack-bot
+# Vector-slack-bot
