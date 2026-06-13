@@ -127,6 +127,113 @@ ${response.data.punchline}`
   }
 });
 
+app.command("/vector-github", async ({ ack, respond, command }) => {
+  await ack();
+
+  const username = command.text.trim();
+  if (!username) {
+    await respond({ text: "Usage: `/vector-github <username>`" });
+    return;
+  }
+
+  const headers = process.env.GITHUB_TOKEN
+    ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
+    : {};
+  
+  try {
+    const [userRes, reposRes] = await Promise.all([
+      axios.get(`https://api.github.com/users/${username}`, { headers }),
+      axios.get(`https://api.github.com/users/${username}/repos?sort=updated&per_page=3`, { headers })
+    ]);
+
+    const user = userRes.data;
+    const repos = reposRes.data;
+
+    const repoList = repos
+      .map(r => `• <${r.html_url}|${r.name}> — ${r.description || "No description"} ⭐ ${r.stargazers_count}`)
+      .join("\n");
+
+    await respond({
+      blocks: [
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*<${user.html_url}|${user.login}>*${user.name ? ` (${user.name})` : ""}\n${user.bio || "_No bio_"}`
+          },
+          accessory: {
+            type: "image",
+            image_url: user.avatar_url,
+            alt_text: user.login
+          }
+        },
+        {
+          type: "section",
+          fields: [
+            { type: "mrkdwn", text: `*Followers:* ${user.followers}` },
+            { type: "mrkdwn", text: `*Following:* ${user.following}` },
+            { type: "mrkdwn", text: `*Public Repos:* ${user.public_repos}` },
+            { type: "mrkdwn", text: `*Location:* ${user.location || "N/A"}` }
+          ]
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*Recent Repos:*\n${repoList}`
+          }
+        }
+      ]
+    });
+  } catch (err) {
+    if (err.response?.status === 404) {
+      await respond({ text: `User \`${username}\` not found on GitHub.` });
+    } else {
+      console.error(err);
+      await respond({ text: "Failed to fetch GitHub profile." });
+    }
+  }
+});
+
+
+app.command("/vector-leetcode", async ({ ack, respond }) => {
+  await ack();
+
+  try {
+    const response = await axios.get("https://alfa-leetcode-api.onrender.com/daily");
+    const p = response.data;
+
+    const diff = { Easy: "Easy", Medium: "Medium", Hard: "Hard" }[p.difficulty] ?? p.difficulty;
+    const tags = p.topicTags.map(t => t.name).join(", ");
+
+    await respond({
+      blocks: [
+        {
+          type: "header",
+          text: { type: "plain_text", text: "LeetCode Daily Challenge" }
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*<${p.questionLink}|${p.questionFrontendId}. ${p.questionTitle}>*\n${diff}`
+          }
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*Topics:* ${tags}`
+          }
+        }
+      ]
+    });
+  } catch (err) {
+    console.error(err);
+    await respond({ text: "Failed to fetch today's LeetCode problem." });
+  }
+});
+
 
 app.command("/vector-hello", async ({ack, respond}) => {
   await ack();
@@ -142,13 +249,15 @@ app.command("/vector-help", async ({ ack, respond }) => {
   await respond({
     text:
 `Available Commands:
-/vector-ping - Check bot latency
-/vector-catfact - Get a cat fact
-/vector-joke - Get a random joke
-/vector-hello - Says hello!
-/vector-apod - Get NASA's Astronomy Picture of the Day
-/vector-earth - Get the latest EPIC Earth image
-/vector-help - Show this help message`
+/vector-ping       - Check bot latency
+/vector-hello      - Says hello!
+/vector-catfact    - Get a cat fact
+/vector-joke       - Get a random joke
+/vector-apod       - NASA's Astronomy Picture of the Day
+/vector-earth      - Latest EPIC Earth image
+/vector-github     - GitHub profile stats
+/vector-leetcode   - Today's LeetCode daily problem
+/vector-help       - Show this help message`
   });
 });
 
