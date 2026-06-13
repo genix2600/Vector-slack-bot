@@ -105,6 +105,7 @@ app.command("/vector-catfact", async ({ ack, respond }) => {
     const response = await axios.get("https://catfact.ninja/fact");
     await respond({ text: `Cat Fact:\n${response.data.fact}` });
   } catch (err) {
+    console.error(err);
     await respond({ text: "Failed to fetch a cat fact." });
   }
 });
@@ -121,6 +122,7 @@ app.command("/vector-joke", async ({ ack, respond }) => {
 ${response.data.punchline}`
     });
   } catch (err) {
+    console.error(err);
     await respond({ text: "Failed to fetch a joke." });
   }
 });
@@ -145,6 +147,7 @@ app.command("/vector-help", async ({ ack, respond }) => {
 /vector-joke - Get a random joke
 /vector-hello - Says hello!
 /vector-apod - Get NASA's Astronomy Picture of the Day
+/vector-earth - Get the latest EPIC Earth image
 /vector-help - Show this help message`
   });
 });
