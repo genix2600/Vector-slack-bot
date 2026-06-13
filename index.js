@@ -9,6 +9,22 @@ const app = new App({
   socketMode: true
 });
 
+app.command("/vector-apod", async ({ ack, respond }) => {
+  await ack();
+  try {
+    const response = await axios.get(
+      `https://api.nasa.gov/planetary/apod?api_key=${process.env.NASA_API_KEY}`
+    );
+    const data = response.data;
+    await respond({
+      text: `*${data.title}*\n${data.explanation}\n${data.url}`
+    });
+  }
+  catch (err) {
+    console.error(err);
+    await respond({ text: "Failed to fetch NASA's Astronomy Picture of the Day." });
+  }
+});
 
 app.command("/vector-ping", async ({ack, respond }) => {
   const start = Date.now();
@@ -63,6 +79,7 @@ app.command("/vector-help", async ({ ack, respond }) => {
 /vector-catfact - Get a cat fact
 /vector-joke - Get a random joke
 /vector-hello - Says hello!
+/vector-apod - Get NASA's Astronomy Picture of the Day
 /vector-help - Show this help message`
   });
 });
