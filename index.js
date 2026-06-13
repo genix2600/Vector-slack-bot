@@ -46,6 +46,51 @@ app.command("/vector-apod", async ({ ack, respond }) => {
   }
 });
 
+app.command("/vector-earth", async ({ ack, respond }) => {
+  await ack();
+  
+  let imageUrl;
+  
+  try {
+    const response = await axios.get(
+      "https://epic.gsfc.nasa.gov/api/natural"
+    );
+    const latest = response.data[0];
+    const [year, month, day] = latest.date.split(" ")[0].split("-");
+    imageUrl = `https://epic.gsfc.nasa.gov/archive/natural/${year}/${month}/${day}/thumbs/${latest.image}.jpg`;
+    
+    await respond({
+      blocks: [
+        {
+          type: "header",
+          text: {
+            type: "plain_text",
+            text: "Latest EPIC Earth Image"
+          }
+        },
+        {
+          type: "image",
+          image_url: imageUrl,
+          alt_text: "Earth from EPIC"
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `Captured: ${latest.date}`
+          }
+        }
+      ]
+    });
+  }
+  catch (err) {
+    console.error(err);
+    console.log("imageUrl at error:", imageUrl);
+    await respond({ text: "Failed to fetch the latest EPIC Earth image." });
+  }
+});
+
+
 app.command("/vector-ping", async ({ack, respond }) => {
   const start = Date.now();
   await ack();
