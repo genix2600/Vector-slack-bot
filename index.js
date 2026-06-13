@@ -17,7 +17,27 @@ app.command("/vector-apod", async ({ ack, respond }) => {
     );
     const data = response.data;
     await respond({
-      text: `*${data.title}*\n${data.explanation}\n${data.url}`
+      blocks: [
+        {
+          type: "header",
+          text: {
+            type: "plain_text",
+            text: data.title
+          }
+        },
+        {
+          type: "image",
+          image_url: data.url,
+          alt_text: data.title
+        },
+        { 
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: data.explanation
+          }  
+        }
+      ],
     });
   }
   catch (err) {
